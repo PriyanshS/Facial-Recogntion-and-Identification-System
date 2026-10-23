@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionIQ — Classical Face Recognition & DIP Studio</title>
+  <meta name="description" content="Modular Face Recognition and Identification Studio using classical digital image processing techniques: OpenCV, NumPy, SQLite, LBP, and HOG.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Background Glow Accents -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 16v1M12 7v1M8 12H7M17 12h-1" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">VisionIQ <span class="badge badge-accent">Classical CV</span></h1>
+          <p class="brand-subtitle">Digital Image Processing & Face Identification Engine</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="db-pill">
+          <span class="pulse-dot"></span>
+          <span>Enrolled Users: <strong id="db-user-count">0</strong></span>
+        </div>
+        <button id="btn-seed-demo" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 21h5v-5" />
+          </svg>
+          Seed Demo DB (Alice & Bob)
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs-wrapper">
+      <div class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="tab-identify" role="tab" id="tab-btn-identify">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          1. Face Identification
+        </button>
+        <button class="nav-tab" data-tab="tab-pipeline" role="tab" id="tab-btn-pipeline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </svg>
+          2. DIP Pipeline Inspector (9 Stages)
+        </button>
+        <button class="nav-tab" data-tab="tab-features" role="tab" id="tab-btn-features">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          3. Feature Vectors (LBP & HOG)
+        </button>
+        <button class="nav-tab" data-tab="tab-database" role="tab" id="tab-btn-database">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+          </svg>
+          4. Database & Enrollment
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="app-main">
+
+    <!-- ==================================================================== -->
+    <!-- TAB 1: FACE IDENTIFICATION STUDIO                                    -->
+    <!-- ==================================================================== -->
+    <section id="tab-identify" class="tab-panel active">
+      <div class="grid-2col">
+        <!-- Left: Input & Test Selection Panel -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Query Face Input</h2>
+              <p class="card-subtitle">Choose a pre-loaded test portrait, upload a custom photo, or capture from webcam.</p>
+            </div>
+          </div>
+
+          <!-- Quick Sample Picker -->
+          <div class="sample-picker-section">
+            <label class="section-label">Quick Test Scenarios (1-Click Test):</label>
+            <div class="sample-grid" id="sample-buttons-container">
+              <!-- Dynamically populated sample cards -->
+            </div>
+          </div>
+
+          <!-- Upload Dropzone & Live Camera Trigger -->
+          <div class="input-methods-row">
+            <div class="dropzone" id="image-dropzone">
+              <input type="file" id="file-input" accept="image/*" class="file-input-hidden">
+              <div class="dropzone-content">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <p class="dropzone-text"><strong>Click or drag & drop</strong> any photo</p>
+                <span class="dropzone-hint">Supports JPG, PNG, WEBP</span>
+              </div>
+            </div>
+
+            <button id="btn-toggle-camera" class="btn btn-camera">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              <span>Use Webcam</span>
+            </button>
+          </div>
+
+          <!-- Camera Stream Container (Hidden by default) -->
+          <div id="camera-modal" class="camera-stream-box hidden">
+            <video id="webcam-video" autoplay playsinline></video>
+            <canvas id="camera-canvas" class="hidden"></canvas>
+            <div class="camera-controls">
+              <button id="btn-snap-photo" class="btn btn-primary">Capture & Identify</button>
+              <button id="btn-close-camera" class="btn btn-outline">Close</button>
+            </div>
+          </div>
+
+          <!-- Selected Query Image Preview -->
+          <div class="preview-container">
+            <div class="preview-header">
+              <span class="preview-title">Current Query Image</span>
+              <span id="preview-filename" class="preview-tag">sample_data/alice_query.jpg</span>
+            </div>
+            <div class="preview-image-wrapper">
+              <img id="query-preview-img" src="/sample_data/alice_query.jpg" alt="Query Preview">
+              <div id="scan-line" class="scan-line hidden"></div>
+            </div>
+          </div>
+
+          <!-- Euclidean Distance Threshold Tuning -->
+          <div class="threshold-control-card">
+            <div class="threshold-header">
+              <label for="threshold-slider" class="threshold-label">
+                Euclidean Distance Threshold (T):
+              </label>
+              <span id="threshold-val" class="threshold-badge">0.46</span>
+            </div>
+            <input type="range" id="threshold-slider" min="0.10" max="0.90" step="0.01" value="0.46" class="custom-range">
+            <div class="threshold-scale-markers">
+              <span>Strict (0.35)</span>
+              <span>Calibrated (0.46)</span>
+              <span>Lenient (0.55)</span>
+            </div>
+            <p class="threshold-explanation">
+              Unit-Normalized Anatomical LBPH: Same person (different photo, 15&deg; head tilt, or heavy beard) yields <strong>d &asymp; 0.31 &ndash; 0.39</strong>. Different individuals have <strong>d &gt; 0.52</strong>.
+            </p>
+          </div>
+
+          <!-- Run Identification Button -->
+          <button id="btn-run-identify" class="btn btn-primary btn-block btn-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 14 14" />
+            </svg>
+            Execute Identification Pipeline
+          </button>
+        </div>
+
+        <!-- Right: Results & Match Analysis Panel -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Identification Verdict</h2>
+              <p class="card-subtitle">Real-time matching against SQLite enrolled feature templates.</p>
+            </div>
+            <span id="execution-time-badge" class="badge badge-subtle">Elapsed: -- ms</span>
+          </div>
+
+          <!-- Hero Verdict Box -->
+          <div id="match-verdict-box" class="verdict-card verdict-idle">
+            <div class="verdict-icon-wrap" id="verdict-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div class="verdict-info">
+              <span class="verdict-label" id="verdict-label">Ready</span>
+              <h3 class="verdict-name" id="verdict-name">Select or upload an image to identify</h3>
+              <p class="verdict-desc" id="verdict-desc">The query will be normalized, transformed to LBP/HOG vectors, and matched via Euclidean distance.</p>
+            </div>
+          </div>
+
+          <!-- Metrics Grid -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-title">Euclidean Distance (L2)</span>
+              <div class="metric-value-row">
+                <span class="metric-val" id="metric-distance">--</span>
+                <span class="metric-unit">dist</span>
+              </div>
+              <span class="metric-hint" id="metric-distance-hint">Lower is closer</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-title">Cosine Similarity</span>
+              <div class="metric-value-row">
+                <span class="metric-val" id="metric-similarity">--</span>
+                <span class="metric-unit">[0-1]</span>
+              </div>
+              <span class="metric-hint">Angle-based metric</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-title">Template Dimension</span>
+              <div class="metric-value-row">
+                <span class="metric-val" id="metric-dim">4,648</span>
+                <span class="metric-unit">floats</span>
+              </div>
+              <span class="metric-hint">LBP + Sobel + HOG</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-title">Classification State</span>
+              <div class="metric-value-row">
+                <span class="metric-val text-sm" id="metric-status">Awaiting query</span>
+              </div>
+              <span class="metric-hint" id="metric-threshold-hint">Threshold: 0.46</span>
+            </div>
+          </div>
+
+          <!-- All Candidate Comparison Leaderboard -->
+          <div class="candidates-section">
+            <div class="section-header-inline">
+              <h3 class="section-title">Database Distance Rankings</h3>
+              <span class="text-xs text-muted">Sorted by Euclidean Distance (ascending)</span>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table" id="candidates-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Identity</th>
+                    <th>Euclidean Dist</th>
+                    <th>Cosine Sim</th>
+                    <th>Distance Bar</th>
+                    <th>Decision</th>
+                  </tr>
+                </thead>
+                <tbody id="candidates-tbody">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-8">
+                      No matching performed yet. Click "Execute Identification Pipeline".
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Live Pipeline Mini-Strip -->
+          <div class="mini-strip-section">
+            <div class="section-header-inline">
+              <h3 class="section-title">DIP Transformation Quick-Strip</h3>
+              <a href="#" class="link-subtle" id="link-goto-pipeline">View Full Pipeline &rarr;</a>
+            </div>
+            <div class="mini-strip-grid" id="mini-pipeline-strip">
+              <div class="strip-item"><img id="strip-input" src="" alt="Raw"><span class="strip-label">Raw</span></div>
+              <div class="strip-item"><img id="strip-gray" src="" alt="Gray"><span class="strip-label">Grayscale</span></div>
+              <div class="strip-item"><img id="strip-clahe" src="" alt="CLAHE"><span class="strip-label">CLAHE</span></div>
+              <div class="strip-item"><img id="strip-blur" src="" alt="Blur"><span class="strip-label">Gaussian</span></div>
+              <div class="strip-item"><img id="strip-sobel" src="" alt="Sobel"><span class="strip-label">Sobel</span></div>
+              <div class="strip-item"><img id="strip-canny" src="" alt="Canny"><span class="strip-label">Canny</span></div>
+              <div class="strip-item"><img id="strip-roi" src="" alt="ROI"><span class="strip-label">ROI 100x100</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 2: DIGITAL IMAGE PROCESSING (DIP) PIPELINE INSPECTOR            -->
+    <!-- ==================================================================== -->
+    <section id="tab-pipeline" class="tab-panel">
+      <div class="card glass-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Classical Digital Image Processing (DIP) Pipeline</h2>
+            <p class="card-subtitle">
+              Visualizes each foundational image transformation step mandated by the Image & Video Processing curriculum.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-grid" id="pipeline-stages-grid">
+          <!-- Stage 1 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 1</div>
+            <h3 class="stage-title">Input Image & Face Localization</h3>
+            <p class="stage-desc">Raw RGB frame analyzed with Viola-Jones Haar Cascade detector to localize facial bounding coordinates.</p>
+            <div class="stage-image-box">
+              <img id="pipe-annotated" src="" alt="Annotated Input">
+            </div>
+            <div class="stage-meta" id="pipe-bbox-meta">ROI: Detecting...</div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 2</div>
+            <h3 class="stage-title">Grayscale Luminance Extraction</h3>
+            <p class="stage-desc">Perceptually weighted luminance formula: <code>Y = 0.299R + 0.587G + 0.114B</code> separating luminance from chrominance.</p>
+            <div class="stage-image-box">
+              <img id="pipe-grayscale" src="" alt="Grayscale">
+            </div>
+            <div class="stage-meta">Dynamic Range: [0, 255]</div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 3</div>
+            <h3 class="stage-title">YUV Color Space — Y Channel</h3>
+            <p class="stage-desc">Alternative color space luminance isolation. The Y channel is resilient to color cast variations.</p>
+            <div class="stage-image-box">
+              <img id="pipe-yuv" src="" alt="YUV Y Channel">
+            </div>
+            <div class="stage-meta">Channel 0 (Luminance)</div>
+          </div>
+
+          <!-- Stage 3b: Homomorphic Filtering -->
+          <div class="stage-card">
+            <div class="stage-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Stage 3b (Homomorphic)</div>
+            <h3 class="stage-title">Homomorphic Filtering (Log-FFT)</h3>
+            <p class="stage-desc">Frequency-domain log-transform: &ln;(I) = &ln;(L) + &ln;(R). Attenuates low-frequency illumination (shadows) and amplifies invariant facial reflectance.</p>
+            <div class="stage-image-box">
+              <img id="pipe-homomorphic" src="" alt="Homomorphic Filter">
+            </div>
+            <div class="stage-meta">2D-FFT | D0=20 | &gamma;_L=0.75, &gamma;_H=1.25</div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 4</div>
+            <h3 class="stage-title">Global Histogram Equalization</h3>
+            <p class="stage-desc">Cumulative Distribution Function (CDF) mapping to redistribute intensity across full spectrum.</p>
+            <div class="stage-image-box">
+              <img id="pipe-histeq" src="" alt="Histogram Equalization">
+            </div>
+            <div class="stage-meta">Global Contrast Stretch</div>
+          </div>
+
+          <!-- Stage 5 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 5</div>
+            <h3 class="stage-title">CLAHE Local Contrast Enhancement</h3>
+            <p class="stage-desc">Contrast-Limited Adaptive Histogram Equalization operates on local 8&times;8 tiles with clipping limit = 2.0.</p>
+            <div class="stage-image-box">
+              <img id="pipe-clahe" src="" alt="CLAHE">
+            </div>
+            <div class="stage-meta">Tile Grid: 8x8 | Clip: 2.0</div>
+          </div>
+
+          <!-- Stage 6 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 6</div>
+            <h3 class="stage-title">Gaussian Spatial Low-Pass Smoothing</h3>
+            <p class="stage-desc">Convolves with a 3&times;3 Gaussian kernel (&sigma; = 0.8) to attenuate high-frequency sensor noise.</p>
+            <div class="stage-image-box">
+              <img id="pipe-gauss" src="" alt="Gaussian Blur">
+            </div>
+            <div class="stage-meta">Kernel: 3x3 | &sigma; = 0.8</div>
+          </div>
+
+          <!-- Stage 7 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 7</div>
+            <h3 class="stage-title">Median Filter (Non-linear)</h3>
+            <p class="stage-desc">Replaces pixels with neighborhood median to eliminate impulsive salt-and-pepper artifacts.</p>
+            <div class="stage-image-box">
+              <img id="pipe-median" src="" alt="Median Filter">
+            </div>
+            <div class="stage-meta">Window: 3x3 Non-Linear</div>
+          </div>
+
+          <!-- Stage 8 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 8</div>
+            <h3 class="stage-title">Sobel Gradient Magnitude</h3>
+            <p class="stage-desc">Directional kernels Gx and Gy approximate spatial derivatives: <code>|G| = &radic;(Gx&sup2; + Gy&sup2;)</code>.</p>
+            <div class="stage-image-box">
+              <img id="pipe-sobel" src="" alt="Sobel Edges">
+            </div>
+            <div class="stage-meta">Operators: Gx, Gy (ksize=3)</div>
+          </div>
+
+          <!-- Stage 9 -->
+          <div class="stage-card">
+            <div class="stage-badge">Stage 9</div>
+            <h3 class="stage-title">Canny Edge Detection & Contours</h3>
+            <p class="stage-desc">Multi-stage pipeline: non-maximum suppression (NMS) and hysteresis double-thresholding (50/150).</p>
+            <div class="stage-image-box">
+              <img id="pipe-canny" src="" alt="Canny Edges">
+            </div>
+            <div class="stage-meta">Thresh: T_low=50, T_high=150</div>
+          </div>
+
+          <!-- Stage 10 (Final ROI) -->
+          <div class="stage-card highlight-card">
+            <div class="stage-badge">Stage 10</div>
+            <h3 class="stage-title">Normalized Fixed Face ROI</h3>
+            <p class="stage-desc">Uniform 100&times;100 pixel cropped face ready for deterministic feature template generation.</p>
+            <div class="stage-image-box">
+              <img id="pipe-roi" src="" alt="Normalized ROI">
+            </div>
+            <div class="stage-meta">Resolution: 100 &times; 100 px (uint8)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 3: FEATURE EXTRACTION & HISTOGRAMS                               -->
+    <!-- ==================================================================== -->
+    <section id="tab-features" class="tab-panel">
+      <div class="grid-2col">
+        <!-- LBP Texture Section -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Local Binary Pattern (LBP) Histogram</h2>
+              <p class="card-subtitle">256-bin micro-texture frequency distribution (8-neighborhood circular comparison).</p>
+            </div>
+            <span class="badge badge-accent">256 Bins</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-lbp" width="550" height="240"></canvas>
+          </div>
+          <p class="chart-caption">
+            LBP captures fine-grained skin micro-textures, wrinkles, and boundary transitions invariant to monotonic illumination shifts.
+          </p>
+        </div>
+
+        <!-- Gradient Orientation Section -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Sobel Gradient Orientation Distribution</h2>
+              <p class="card-subtitle">Magnitude-weighted orientation histogram across 36 angular bins (0&deg; to 360&deg;).</p>
+            </div>
+            <span class="badge badge-accent">36 Bins</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-grad" width="550" height="240"></canvas>
+          </div>
+          <p class="chart-caption">
+            Weighted by gradient magnitude <code>|G|</code>, highlighting the dominant angular directions of structural face contours.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature Vector Summary Card -->
+      <div class="card glass-card mt-6">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Combined Numerical Feature Template Architecture</h2>
+            <p class="card-subtitle">Serialized float32 vector stored in SQLite database BLOB column.</p>
+          </div>
+          <span class="badge badge-subtle">4,648 Total Dimensions</span>
+        </div>
+
+        <div class="template-breakdown-grid">
+          <div class="template-part">
+            <span class="part-name">LBP Histogram</span>
+            <span class="part-dims">256 values</span>
+            <span class="part-role">Texture & Micro-Structure</span>
+          </div>
+          <div class="template-part">
+            <span class="part-name">Gradient Orientation</span>
+            <span class="part-dims">36 values</span>
+            <span class="part-role">Contour Angles</span>
+          </div>
+          <div class="template-part">
+            <span class="part-name">HOG Descriptors</span>
+            <span class="part-dims">4,356 values</span>
+            <span class="part-role">Spatial Shape Blocks</span>
+          </div>
+          <div class="template-part highlight-part">
+            <span class="part-name">Concatenated Template</span>
+            <span class="part-dims">4,648 dimensions</span>
+            <span class="part-role">Exact 18,592 Bytes BLOB</span>
+          </div>
+        </div>
+
+        <!-- Visual Sparkline Bar of HOG Sample -->
+        <div class="hog-sample-wrapper">
+          <label class="section-label">HOG Feature Vector Sample (First 64 Dimensions):</label>
+          <div class="sparkline-bar-container" id="hog-sparkline">
+            <!-- Dynamically generated bars -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 4: DATABASE & USER ENROLLMENT                                   -->
+    <!-- ==================================================================== -->
+    <section id="tab-database" class="tab-panel">
+      <div class="grid-2col">
+        <!-- Enrollment Form -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Enroll New User</h2>
+              <p class="card-subtitle">Register a new face template into the local SQLite database.</p>
+            </div>
+          </div>
+
+          <form id="enroll-form" class="enroll-form">
+            <div class="form-group">
+              <label for="enroll-name" class="form-label">Full Name / Subject ID:</label>
+              <input type="text" id="enroll-name" class="form-input" placeholder="e.g., Sarah Connor" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Face Image:</label>
+              <div class="dropzone" id="enroll-dropzone">
+                <input type="file" id="enroll-file-input" accept="image/*" class="file-input-hidden">
+                <div class="dropzone-content">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <p class="dropzone-text">Click or drop portrait photo here</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="enroll-preview-box" class="enroll-preview-box hidden">
+              <img id="enroll-preview-img" src="" alt="Enrollment Preview">
+              <span id="enroll-preview-status" class="preview-tag">Face selected</span>
+            </div>
+
+            <button type="submit" id="btn-submit-enroll" class="btn btn-primary btn-block">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="8.5" cy="7" r="4" />
+                <line x1="20" y1="8" x2="20" y2="14" />
+                <line x1="23" y1="11" x2="17" y2="11" />
+              </svg>
+              Process & Enroll Face
+            </button>
+          </form>
+        </div>
+
+        <!-- Enrolled Users Roster -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Enrolled Subjects Roster</h2>
+              <p class="card-subtitle">Stored in local SQLite database (<code>face_recognition.db</code>).</p>
+            </div>
+            <button id="btn-clear-db" class="btn btn-danger-subtle btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Clear DB
+            </button>
+          </div>
+
+          <div class="roster-list" id="users-roster-container">
+            <!-- Dynamically populated roster list -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast hidden">
+    <div class="toast-icon" id="toast-icon">✓</div>
+    <div class="toast-message" id="toast-message">Action successful</div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
